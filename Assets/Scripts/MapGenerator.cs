@@ -8,7 +8,7 @@ public class MapGenerator : MonoBehaviour
     public int y;
     public int minwidth;
     public int minheight;
-    //public int offset;
+    public int offset;
     public Vector3Int start;
 
     public GameObject ground; //Remember the ground format is always 16:9
@@ -20,7 +20,7 @@ public class MapGenerator : MonoBehaviour
 
     private List<BoundsInt> rooms;
     private Queue<BoundsInt> roomQ;
-    private int[,] maplayout;
+    private GameObject groundlayout;
 
     // Start is called before the first frame update
     void Awake()
@@ -32,7 +32,7 @@ public class MapGenerator : MonoBehaviour
             y = (int)ground.transform.localScale.y;
 
         }
-
+        offset = offset == 0 ? 1 : offset;
         //Set start vector as a position
         if (start == Vector3Int.zero)
             start = new Vector3Int(0, 0, 0);
@@ -44,40 +44,66 @@ public class MapGenerator : MonoBehaviour
             minwidth = 7;
         }
 
-        //Map initialized as 0's
-        maplayout = new int[x, y];
-        for (int i = 0; i < x; i++)
-            for (int j = 0; j < y; j++)
-                maplayout[i, j] = 0;
-
         rooms = new List<BoundsInt>();
         roomQ = new Queue<BoundsInt>();
         BSP();
-        showrooms();
+        //showrooms();
+        createrooms();
         UpdateBorder();
     }
+
+    private void Update()
+    {
+        if(Input.GetKeyDown(KeyCode.Space))
+        {
+            BSP();
+            //showrooms();
+            createrooms();
+            UpdateBorder();
+        }
+    }
+    //---------------------------------------
 
     private void showrooms()
     {
         Debug.Log(rooms.Count);
         foreach (var room in rooms)
-            Debug.Log("Room: X: " + room.x + "\t Y: " + room.y);
+        {
+            Debug.Log("Room Size: \nX: " + room.size.x + "\t Y: " + room.size.y);
+            Debug.Log("Room Position: \nX: " + room.position.x + "\t Y: " + room.position.y);
+        }
+
     }
+
+    private void createrooms()
+    {
+        if (ground.transform.childCount > 0)
+            for (int c = ground.transform.childCount - 1; c >= 0; c--)
+                Destroy(ground.transform.GetChild(c).gameObject);
+        foreach (var room in rooms)
+            for (int i = offset; i < room.size.x - offset; i++)
+                for (int j = offset; j < room.size.y - offset; j++)
+                {
+                    groundlayout = Instantiate(groundtile, new Vector3(room.position.x + i, room.position.y + j, 0), Quaternion.identity);
+                    groundlayout.transform.SetParent(ground.transform);
+                }
+    }
+    //---------------------------------------
 
     private void BSP()
     {
         var room = new BoundsInt();
         room.size = new Vector3Int(x, y, 0);
-        room.position = new Vector3Int();
+        room.position = new Vector3Int(- x/2, - y/2, 0);
         roomQ.Enqueue(room);
         while (roomQ.Count > 0)
         {
             room = roomQ.Dequeue();
-            if((room.x >= 2 * minwidth || room.y >= 2 * minheight) && Random.value < 0.95)
+            if((room.size.x >= 2 * minwidth || room.size.y >= 2 * minheight) && Random.value < 0.95)
             {
-                if (Random.value > 0.5 && room.x >= 2 * minwidth)
+                if (Random.value > 0.5 && room.size.x >= 2 * minwidth)
                     SplitHorizontally(room);
-                else if (room.y >= 2 * minheight)
+                else if (room.size.y >= 2 * minheight)
                     SplitVertically(room);
                 else
                     continue;
@@ -90,7 +116,17 @@ public class MapGenerator : MonoBehaviour
     private void SplitHorizontally(BoundsInt room)
     {
         Debug.Log("Pass Horizontal:");
-        int xSplit = Random.Range(minwidth, room.x - minwidth);
+        int xSplit = Random.Range(minwidth, room.size.x - minwidth);
+        var room_left = new BoundsInt();
+        room_left.size = new Vector3Int(xSplit, room.size.y, room.size.z);
+        room_left.position = new Vector3Int(room.position.x, room.position.y, room.position.z);
+
+        var room_right = new BoundsInt();
+        room_right.size = new Vector3Int(room.size.x - xSplit, room.size.y, room.size.z);
+        room_right.position = new Vector3Int(room.position.x + xSplit, room.position.y, room.position.z);
+
+        roomQ.Enqueue(room_left);
+        roomQ.Enqueue(room_right);
         //roomQ.Enqueue(new Vector2Int(xSplit, room.y));
         //roomQ.Enqueue(new Vector2Int(room.x - xSplit, room.y));
     }
@@ -98,10 +134,22 @@ public class MapGenerator : MonoBehaviour
     private void SplitVertically(BoundsInt room)
     {
         Debug.Log("Pass Vertical:");
-        int ySplit = Random.Range(minheight, room.y - minheight);
+        int ySplit = Random.Range(minheight, room.size.y - minheight);
+        var room_top = new BoundsInt();
+        room_top.size = new Vector3Int(room.size.x, ySplit, room.size.z);
+        room_top.position = new Vector3Int(room.position.x, room.position.y, room.position.z);
+
+        var room_bottom = new BoundsInt();
+        room_bottom.size = new Vector3Int(room.size.x, room.size.y - ySplit, room.size.z);
+        room_bottom.position = new Vector3Int(room.position.x, room.position.y + ySplit, room.position.z);
+
+        roomQ.Enqueue(room_top);
+        roomQ.Enqueue(room_bottom);
         //roomQ.Enqueue(new Vector2Int(room.x, ySplit));
         //roomQ.Enqueue(new Vector2Int(room.x, room.y - ySplit));
     }
+
+    //---------------------------------------
 
     private void UpdateBorder()
     {

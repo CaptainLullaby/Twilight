@@ -762,11 +762,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5974773641321138954, guid: 0b352606fc8f4fe459e48fd4cc267c83, type: 3}
       propertyPath: x
-      value: 16
+      value: 32
       objectReference: {fileID: 0}
     - target: {fileID: 5974773641321138954, guid: 0b352606fc8f4fe459e48fd4cc267c83, type: 3}
       propertyPath: y
-      value: 8
+      value: 18
       objectReference: {fileID: 0}
     - target: {fileID: 5974773641321138954, guid: 0b352606fc8f4fe459e48fd4cc267c83, type: 3}
       propertyPath: Ground
