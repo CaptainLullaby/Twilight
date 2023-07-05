@@ -778,11 +778,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5974773641321138954, guid: 0b352606fc8f4fe459e48fd4cc267c83, type: 3}
       propertyPath: minwidth
-      value: 7
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 5974773641321138954, guid: 0b352606fc8f4fe459e48fd4cc267c83, type: 3}
       propertyPath: minheight
-      value: 7
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 5974773641321138954, guid: 0b352606fc8f4fe459e48fd4cc267c83, type: 3}
       propertyPath: groundtile

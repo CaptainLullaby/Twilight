@@ -9,18 +9,16 @@ public class MapGenerator : MonoBehaviour
     public int minwidth;
     public int minheight;
     public int offset;
-    public Vector3Int start;
 
     public GameObject ground; //Remember the ground format is always 16:9
-    public GameObject borderwall_left;
-    public GameObject borderwall_right;
-    public GameObject borderwall_top;
-    public GameObject borderwall_bottom;
+
     public GameObject groundtile;
+    public GameObject borderwall;
 
     private List<BoundsInt> rooms;
     private Queue<BoundsInt> roomQ;
-    private GameObject groundlayout;
+    private GameObject[,] groundlayout;
+    private int[,] map;
 
     // Start is called before the first frame update
     void Awake()
@@ -33,12 +31,13 @@ public class MapGenerator : MonoBehaviour
 
         }
         offset = offset == 0 ? 1 : offset;
-        //Set start vector as a position
-        if (start == Vector3Int.zero)
-            start = new Vector3Int(0, 0, 0);
+
+        //new map layout
+        map = new int[x, y];
+        groundlayout = new GameObject[x, y];
 
         //Set minimum width and height as 7
-        if(minheight == 0 && minwidth == 0)
+        if (minheight == 0 && minwidth == 0)
         {
             minheight = 7;
             minwidth = 7;
@@ -47,8 +46,7 @@ public class MapGenerator : MonoBehaviour
         rooms = new List<BoundsInt>();
         roomQ = new Queue<BoundsInt>();
         BSP();
-        //showrooms();
-        createrooms();
+        showrooms();
         UpdateBorder();
     }
 
@@ -56,9 +54,9 @@ public class MapGenerator : MonoBehaviour
     {
         if(Input.GetKeyDown(KeyCode.Space))
         {
+            ResetMap();
             BSP();
-            //showrooms();
-            createrooms();
+            showrooms();
             UpdateBorder();
         }
     }
@@ -66,40 +64,48 @@ public class MapGenerator : MonoBehaviour
 
     private void showrooms()
     {
-        Debug.Log(rooms.Count);
-        foreach (var room in rooms)
-        {
-            Debug.Log("Room Size: \nX: " + room.size.x + "\t Y: " + room.size.y);
-            Debug.Log("Room Position: \nX: " + room.position.x + "\t Y: " + room.position.y);
-        }
+        createrooms();
+        for (int i = 0; i < x; i++)
+            for (int j = 0; j < y; j++)
+                if (groundlayout[i, j] != null)
+                    Destroy(groundlayout[i, j]);
 
+        for (int i = 0; i < x; i++)
+            for(int j=0; j < y; j++)
+            {
+                if (map[i, j] == 1)
+                    groundlayout[i, j] = Instantiate(groundtile, new Vector3(i - x / 2 + 0.5f, j - y / 2 + 0.5f, 0), Quaternion.identity);
+                else
+                    groundlayout[i, j] = Instantiate(borderwall, new Vector3(i - x / 2 + 0.5f, j - y / 2 + 0.5f, 0), Quaternion.identity);
+            }
     }
 
     private void createrooms()
     {
-        if (ground.transform.childCount > 0)
-            for (int c = ground.transform.childCount - 1; c >= 0; c--)
-                Destroy(ground.transform.GetChild(c).gameObject);
+        Debug.Log(rooms.Count);
         foreach (var room in rooms)
-            for (int i = offset; i < room.size.x - offset; i++)
-                for (int j = offset; j < room.size.y - offset; j++)
-                {
-                    groundlayout = Instantiate(groundtile, new Vector3(room.position.x + i, room.position.y + j, 0), Quaternion.identity);
-                    groundlayout.transform.SetParent(ground.transform);
-                }
+            for (int i = offset; i < room.size.x - offset + 1; i++)
+                for (int j = offset; j < room.size.y - offset + 1; j++)
+                    map[room.position.x + i, room.position.y + j] = 1;
+        for (int i = 0; i < x; i++)
+            for (int j = 0; j < y; j++)
+            {
+                if (map[i, j] != 1)
+                    map[i, j] = 0;
+            }                    
     }
     //---------------------------------------
 
     private void BSP()
     {
         var room = new BoundsInt();
-        room.size = new Vector3Int(x, y, 0);
-        room.position = new Vector3Int(- x/2, - y/2, 0);
+        room.size = new Vector3Int(x - 1, y - 1, 0);
+        room.position = new Vector3Int(0, 0, 0);
         roomQ.Enqueue(room);
         while (roomQ.Count > 0)
         {
             room = roomQ.Dequeue();
-            if((room.size.x >= 2 * minwidth || room.size.y >= 2 * minheight) && Random.value < 0.95)
+            if(room.size.x >= 2 * minwidth || room.size.y >= 2 * minheight) //&& Random.value < 0.95)
             {
                 if (Random.value > 0.5 && room.size.x >= 2 * minwidth)
                     SplitHorizontally(room);
@@ -115,7 +121,7 @@ public class MapGenerator : MonoBehaviour
 
     private void SplitHorizontally(BoundsInt room)
     {
-        Debug.Log("Pass Horizontal:");
+        //Debug.Log("Pass Horizontal:");
         int xSplit = Random.Range(minwidth, room.size.x - minwidth);
         var room_left = new BoundsInt();
         room_left.size = new Vector3Int(xSplit, room.size.y, room.size.z);
@@ -133,30 +139,42 @@ public class MapGenerator : MonoBehaviour
 
     private void SplitVertically(BoundsInt room)
     {
-        Debug.Log("Pass Vertical:");
+        //Debug.Log("Pass Vertical:");
         int ySplit = Random.Range(minheight, room.size.y - minheight);
         var room_top = new BoundsInt();
         room_top.size = new Vector3Int(room.size.x, ySplit, room.size.z);
         room_top.position = new Vector3Int(room.position.x, room.position.y, room.position.z);
 
         var room_bottom = new BoundsInt();
-        room_bottom.size = new Vector3Int(room.size.x, room.size.y - ySplit, room.size.z);
+        room_bottom.size = new Vector3Int(room.size.x , room.size.y - ySplit, room.size.z);
         room_bottom.position = new Vector3Int(room.position.x, room.position.y + ySplit, room.position.z);
 
         roomQ.Enqueue(room_top);
         roomQ.Enqueue(room_bottom);
-        //roomQ.Enqueue(new Vector2Int(room.x, ySplit));
-        //roomQ.Enqueue(new Vector2Int(room.x, room.y - ySplit));
     }
 
+    //---------------------------------------
+    private void ResetMap()
+    {
+        for (int i = 0; i < x; i++)
+            for (int j = 0; j < y; j++)
+                map[i, j] = 0;
+    }
     //---------------------------------------
 
     private void UpdateBorder()
     {
         ground.transform.localScale = new Vector3(x, y, 1);
+        GameObject borderwall_bottom = Instantiate(borderwall, new Vector3(-0.5f, -(float)(y + 1) / 2, 0), Quaternion.identity);
         borderwall_bottom.transform.localScale = new Vector3(x + 1, 1, 1);
+
+        GameObject borderwall_left = Instantiate(borderwall, new Vector3(-(float)(x + 1) / 2, 0.5f, 0), Quaternion.identity);
         borderwall_left.transform.localScale = new Vector3(1, y + 1, 1);
+
+        GameObject borderwall_top = Instantiate(borderwall, new Vector3(0.5f, (float)(y + 1) / 2, 0), Quaternion.identity);
         borderwall_top.transform.localScale = new Vector3(x + 1, 1, 1);
+
+        GameObject borderwall_right = Instantiate(borderwall, new Vector3((float)(x + 1) / 2, -0.5f, 0), Quaternion.identity);
         borderwall_right.transform.localScale = new Vector3(1, y + 1, 1);
     }
 }
