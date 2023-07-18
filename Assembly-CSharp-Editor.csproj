@@ -56,21 +56,21 @@
     <Analyzer Include="D:\Softwares\Visual Studio IDE 2022\Common7\IDE\Extensions\Microsoft\Visual Studio Tools for Unity\Analyzers\Microsoft.Unity.Analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\NPBehave\Editor\Tests\Composite\ParallelTest.cs" />
-    <Compile Include="Assets\NPBehave\Editor\Tests\Composite\SequenceTest.cs" />
-    <Compile Include="Assets\NPBehave\Editor\DebuggerEditor.cs" />
-    <Compile Include="Assets\NPBehave\Editor\DebuggerWindow.cs" />
-    <Compile Include="Assets\NPBehave\Editor\Tests\Decorator\BlackboardQueryTest.cs" />
-    <Compile Include="Assets\NPBehave\Editor\Tests\Composite\RandomSequenceTest.cs" />
-    <Compile Include="Assets\NPBehave\Editor\Tests\Composite\SelectorTest.cs" />
-    <Compile Include="Assets\NPBehave\Editor\Tests\_utils\MockNode.cs" />
-    <Compile Include="Assets\NPBehave\Editor\Tests\Decorator\RepeaterTest.cs" />
-    <Compile Include="Assets\NPBehave\Editor\Tests\GeneralTest.cs" />
-    <Compile Include="Assets\NPBehave\Editor\Tests\_utils\TestRoot.cs" />
-    <Compile Include="Assets\NPBehave\Editor\Tests\Composite\RandomSelectorTest.cs" />
-    <Compile Include="Assets\NPBehave\Editor\Tests\_utils\Test.cs" />
-    <Compile Include="Assets\NPBehave\Editor\Tests\BlackboardTest.cs" />
-    <Compile Include="Assets\NPBehave\Editor\Tests\ClockTest.cs" />
+    <Compile Include="Assets\Scripts\NPBehave\Editor\Tests\Composite\ParallelTest.cs" />
+    <Compile Include="Assets\Scripts\NPBehave\Editor\Tests\Composite\SequenceTest.cs" />
+    <Compile Include="Assets\Scripts\NPBehave\Editor\DebuggerEditor.cs" />
+    <Compile Include="Assets\Scripts\NPBehave\Editor\DebuggerWindow.cs" />
+    <Compile Include="Assets\Scripts\NPBehave\Editor\Tests\Decorator\BlackboardQueryTest.cs" />
+    <Compile Include="Assets\Scripts\NPBehave\Editor\Tests\Composite\RandomSequenceTest.cs" />
+    <Compile Include="Assets\Scripts\NPBehave\Editor\Tests\Composite\SelectorTest.cs" />
+    <Compile Include="Assets\Scripts\NPBehave\Editor\Tests\_utils\MockNode.cs" />
+    <Compile Include="Assets\Scripts\NPBehave\Editor\Tests\Decorator\RepeaterTest.cs" />
+    <Compile Include="Assets\Scripts\NPBehave\Editor\Tests\GeneralTest.cs" />
+    <Compile Include="Assets\Scripts\NPBehave\Editor\Tests\_utils\TestRoot.cs" />
+    <Compile Include="Assets\Scripts\NPBehave\Editor\Tests\Composite\RandomSelectorTest.cs" />
+    <Compile Include="Assets\Scripts\NPBehave\Editor\Tests\_utils\Test.cs" />
+    <Compile Include="Assets\Scripts\NPBehave\Editor\Tests\BlackboardTest.cs" />
+    <Compile Include="Assets\Scripts\NPBehave\Editor\Tests\ClockTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">

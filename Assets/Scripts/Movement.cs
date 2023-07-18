@@ -1,16 +1,8 @@
+using System.IO;
 using UnityEngine;
 
 public class Movement : MonoBehaviour
 {
-
-    private float xOffset;
-    private float yOffset;
-
-    private void Start()
-    {
-        xOffset = UnityEngine.Random.Range(0f, 100f);
-        yOffset = UnityEngine.Random.Range(0f, 100f);
-    }
     public void Move(float speed)
     {
         transform.Translate(Vector3.up * Time.deltaTime * speed * 2f);
@@ -27,18 +19,10 @@ public class Movement : MonoBehaviour
 
     public void RandomWalk()
     {
-        Vector3 pos = new Vector3(transform.position.x + Mathf.PerlinNoise(xOffset, 0f) - 0.5f, transform.position.y + Mathf.PerlinNoise(0f, yOffset) - 0.5f, transform.position.z);
-        Debug.Log(Vector3.Distance(pos, transform.position));
+        Vector3 pos = new Vector3(transform.position.x + Mathf.PerlinNoise(0f, 100f) - 0.5f, transform.position.y + Mathf.PerlinNoise(0f, 100f) - 0.5f, 0);
+        //Vector3.Slerp(transform.position, pos, Time.deltaTime * 5f);
         Debug.Log(pos);
         transform.position = pos;
     }
-    private void OnCollisionEnter(Collision collision)
-    {
-        if (collision.gameObject.tag == "Wall")
-        {
-
-        }
-    }
-
     
 }

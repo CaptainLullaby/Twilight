@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 2020297282277188423}
   - component: {fileID: 2996889369805491389}
   - component: {fileID: 2996889369805491388}
-  - component: {fileID: 2996889369805491387}
+  - component: {fileID: 8546892341081829087}
   m_Layer: 7
   m_Name: AISpotter
   m_TagString: AI
@@ -32,7 +32,7 @@ Transform:
   m_GameObject: {fileID: 2996889369805491367}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 3.69, y: 0.67, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -165,17 +165,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f9a8ddf6bf358545a12bd7fa67d6e62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &2996889369805491387
+--- !u!114 &8546892341081829087
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2996889369805491367}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 10616f850490d654086c11cb4a7debfa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   behaviour: 0
-  player: {fileID: 1135377781275026177, guid: 6b12037dd71798f4eaf8738ae6254bf1, type: 3}
+  map: {fileID: 7400795568047884028, guid: 0b352606fc8f4fe459e48fd4cc267c83, type: 3}

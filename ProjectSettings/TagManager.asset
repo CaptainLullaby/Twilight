@@ -9,6 +9,7 @@ TagManager:
   - Wall
   - Detection_Cone
   - Ground
+  - Map
   layers:
   - Default
   - TransparentFX

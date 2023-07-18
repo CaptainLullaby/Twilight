@@ -6,30 +6,37 @@ using UnityEngine;
 public class Targeting : MonoBehaviour
 {
     public GameObject target;
-
-    private Vector3 pos;
+    
     private float dist;
     private float rot;
 
-    private void Start()
+    private void Awake()
     {
         target = GameObject.FindGameObjectWithTag("PlayerChar");
     }
 
     private void Update()
     {
-        pos = target.transform.position;
         dist = Vector3.Distance(target.transform.position, transform.position);
-        rot = Vector3.Angle(target.transform.forward, transform.forward);
+        //rot = Vector3.Angle(target.transform.forward, transform.forward);
+        Vector3 heading = transform.InverseTransformPoint(target.transform.position);
+        rot = heading.x;
         //Debug.Log("Target Distance" + dist);
         //Debug.Log("Target Angle" + rot);
     }
 
-    public GameObject gettarget()
+    public float GetDistancetoPlayer()
     {
-        if (dist <= 10f)
-            return target;
-        else
-            return null;
+        return dist;
+    }
+
+    public float GetInversepositiontoPlayer()
+    {
+        return rot;
+    }
+
+    public GameObject GetTarget()
+    {
+        return target;
     }
 }

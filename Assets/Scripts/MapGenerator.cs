@@ -1,7 +1,11 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
+public class Tree
+{
+
+}
 public class MapGenerator : MonoBehaviour
 {
     public int x;
@@ -10,15 +14,21 @@ public class MapGenerator : MonoBehaviour
     public int minheight;
     public int offset;
 
-    public GameObject ground; //Remember the ground format is always 16:9
+    public GameObject Ground; //Remember the ground format is always 16:9
+    public GameObject Wall; //Walls
 
     public GameObject groundtile;
     public GameObject borderwall;
+
+    public GameObject Player;
+    public GameObject enemyAI;
 
     private List<BoundsInt> rooms;
     private Queue<BoundsInt> roomQ;
     private GameObject[,] groundlayout;
     private int[,] map;
+    private int minroomcount;
+    private List<GameObject> enemiesAI;
 
     // Start is called before the first frame update
     void Awake()
@@ -26,8 +36,8 @@ public class MapGenerator : MonoBehaviour
         //the initial positions
         if (x == 0 && y == 0)
         {
-            x = (int)ground.transform.localScale.x;
-            y = (int)ground.transform.localScale.y;
+            x = 32;
+            y = 18;
 
         }
         offset = offset == 0 ? 1 : offset;
@@ -39,32 +49,31 @@ public class MapGenerator : MonoBehaviour
         //Set minimum width and height as 7
         if (minheight == 0 && minwidth == 0)
         {
-            minheight = 7;
-            minwidth = 7;
+            minheight = 4;
+            minwidth = 4;
         }
-
-        rooms = new List<BoundsInt>();
-        roomQ = new Queue<BoundsInt>();
-        BSP();
-        showrooms();
-        UpdateBorder();
+        minroomcount = (x * y) / (4 * minwidth * minheight);
+        //Debug.Log(minroomcount);
+        PCG();
+        PlaceCharacters();
     }
 
     private void Update()
     {
-        if(Input.GetKeyDown(KeyCode.Space))
-        {
-            ResetMap();
-            BSP();
-            showrooms();
-            UpdateBorder();
-        }
     }
+    //---------------------------------------
+
+    private void PCG()
+    {
+        BSP();
+        CreateCorridors();
+        showrooms();
+    }
+
     //---------------------------------------
 
     private void showrooms()
     {
-        createrooms();
         for (int i = 0; i < x; i++)
             for (int j = 0; j < y; j++)
                 if (groundlayout[i, j] != null)
@@ -74,49 +83,75 @@ public class MapGenerator : MonoBehaviour
             for(int j=0; j < y; j++)
             {
                 if (map[i, j] == 1)
+                {
                     groundlayout[i, j] = Instantiate(groundtile, new Vector3(i - x / 2 + 0.5f, j - y / 2 + 0.5f, 0), Quaternion.identity);
+                    groundlayout[i, j].transform.SetParent(Ground.transform);
+                }
                 else
+                {
                     groundlayout[i, j] = Instantiate(borderwall, new Vector3(i - x / 2 + 0.5f, j - y / 2 + 0.5f, 0), Quaternion.identity);
+                    groundlayout[i, j].transform.SetParent(Wall.transform);
+                }
             }
     }
+    //---------------------------------------
 
-    private void createrooms()
+    private void BSP()
     {
-        Debug.Log(rooms.Count);
+        rooms = new List<BoundsInt>();
+        roomQ = new Queue<BoundsInt>();
+        var newroom = new BoundsInt();
+        newroom.size = new Vector3Int(x - 1, y - 1, 0);
+        newroom.position = new Vector3Int(0, 0, 0);
+        roomQ.Enqueue(newroom);
+        ResetMap();
+        while (roomQ.Count > 0)
+        {
+            newroom = roomQ.Dequeue();
+            //old code
+            /*if((newroom.size.x >= 2 * minwidth && newroom.size.y >= 2 * minheight) && Random.value < 0.95)
+            {
+                if (Random.value > 0.5 && newroom.size.x >= 2 * minwidth)
+                    SplitHorizontally(newroom);
+                else if (newroom.size.y >= 2 * minheight)
+                    SplitVertically(newroom);
+                else
+                    continue;
+            }
+            else
+                rooms.Add(newroom);*/
+
+            //new code
+            if (rooms.Count >= minroomcount && Random.value > 0.95f)
+                AddRooms(newroom);
+            else if (newroom.size.x >= 2 * minwidth && newroom.size.y >= 2 * minheight)
+            {
+                if (Random.value > 0.5)
+                    SplitHorizontally(newroom);
+                else
+                    SplitVertically(newroom);
+            }
+            else if (newroom.size.x >= 2 * minwidth)
+                SplitHorizontally(newroom);
+            else if (newroom.size.y >= 2 * minheight)
+                SplitVertically(newroom);
+            else
+                if (Random.value < 0.75)
+                AddRooms(newroom);
+        }
+
+        //Creating rooms in an array and then using said array to render the rooms
+        Debug.Log("Rooms: " + rooms.Count);
         foreach (var room in rooms)
-            for (int i = offset; i < room.size.x - offset + 1; i++)
-                for (int j = offset; j < room.size.y - offset + 1; j++)
+            for (int i = 0; i < room.size.x; i++)
+                for (int j = 0; j < room.size.y; j++)
                     map[room.position.x + i, room.position.y + j] = 1;
         for (int i = 0; i < x; i++)
             for (int j = 0; j < y; j++)
             {
                 if (map[i, j] != 1)
                     map[i, j] = 0;
-            }                    
-    }
-    //---------------------------------------
-
-    private void BSP()
-    {
-        var room = new BoundsInt();
-        room.size = new Vector3Int(x - 1, y - 1, 0);
-        room.position = new Vector3Int(0, 0, 0);
-        roomQ.Enqueue(room);
-        while (roomQ.Count > 0)
-        {
-            room = roomQ.Dequeue();
-            if(room.size.x >= 2 * minwidth || room.size.y >= 2 * minheight) //&& Random.value < 0.95)
-            {
-                if (Random.value > 0.5 && room.size.x >= 2 * minwidth)
-                    SplitHorizontally(room);
-                else if (room.size.y >= 2 * minheight)
-                    SplitVertically(room);
-                else
-                    continue;
             }
-            else
-                rooms.Add(room);
-        }
     }
 
     private void SplitHorizontally(BoundsInt room)
@@ -133,8 +168,6 @@ public class MapGenerator : MonoBehaviour
 
         roomQ.Enqueue(room_left);
         roomQ.Enqueue(room_right);
-        //roomQ.Enqueue(new Vector2Int(xSplit, room.y));
-        //roomQ.Enqueue(new Vector2Int(room.x - xSplit, room.y));
     }
 
     private void SplitVertically(BoundsInt room)
@@ -162,19 +195,111 @@ public class MapGenerator : MonoBehaviour
     }
     //---------------------------------------
 
-    private void UpdateBorder()
+    private void AddRooms(BoundsInt thisroom)
     {
-        ground.transform.localScale = new Vector3(x, y, 1);
-        GameObject borderwall_bottom = Instantiate(borderwall, new Vector3(-0.5f, -(float)(y + 1) / 2, 0), Quaternion.identity);
-        borderwall_bottom.transform.localScale = new Vector3(x + 1, 1, 1);
-
-        GameObject borderwall_left = Instantiate(borderwall, new Vector3(-(float)(x + 1) / 2, 0.5f, 0), Quaternion.identity);
-        borderwall_left.transform.localScale = new Vector3(1, y + 1, 1);
-
-        GameObject borderwall_top = Instantiate(borderwall, new Vector3(0.5f, (float)(y + 1) / 2, 0), Quaternion.identity);
-        borderwall_top.transform.localScale = new Vector3(x + 1, 1, 1);
-
-        GameObject borderwall_right = Instantiate(borderwall, new Vector3((float)(x + 1) / 2, -0.5f, 0), Quaternion.identity);
-        borderwall_right.transform.localScale = new Vector3(1, y + 1, 1);
+        thisroom.position = new Vector3Int(thisroom.position.x + offset, thisroom.position.y + offset, 0);
+        thisroom.size = new Vector3Int(thisroom.size.x - offset, thisroom.size.y - offset, 0);
+        rooms.Add(thisroom);
     }
+
+    private void CreateCorridors()
+    {
+        List<Vector3Int> roomcenters = new List<Vector3Int>();
+        foreach (var room in rooms)
+            roomcenters.Add(Vector3Int.RoundToInt(room.center));
+            //Debug.Log(room.center);
+
+        Debug.Log("Room centers: " + roomcenters.Count);
+
+        var currentroom = roomcenters[Random.Range(0, roomcenters.Count)];
+        roomcenters.Remove(currentroom);
+
+        while (roomcenters.Count > 0)
+        {
+
+            var nearestroom = roomcenters[0];
+            //Finds the nearest room to the selected one
+            foreach (var roomcenter in roomcenters)
+                if (Vector3.Distance(roomcenter, currentroom) <= Vector3.Distance(nearestroom, currentroom))
+                    nearestroom = roomcenter;
+
+            //Debug.Log("Current Room: " + currentroom);
+            //Debug.Log("Nearest Room: " + nearestroom);
+
+            roomcenters.Remove(nearestroom);
+            
+            var startx = currentroom.x < nearestroom.x ? currentroom.x : nearestroom.x;
+            var endx = currentroom.x > nearestroom.x ? currentroom.x : nearestroom.x;
+            
+            var starty = currentroom.y < nearestroom.y ? currentroom.y : nearestroom.y;
+            var endy = currentroom.y > nearestroom.y ? currentroom.y : nearestroom.y;
+
+            if (currentroom.x != nearestroom.x)
+            {
+                var start = currentroom.x < nearestroom.x ? currentroom.x : nearestroom.x;
+                var end = currentroom.x > nearestroom.x ? currentroom.x : nearestroom.x;
+                for (int i = start; i <= end; i++)
+                    map[i, currentroom.y] = 1;
+            }
+            if (currentroom.y != nearestroom.y)
+            {
+                var start = currentroom.y < nearestroom.y ? currentroom.y : nearestroom.y;
+                var end = currentroom.y > nearestroom.y ? currentroom.y : nearestroom.y;
+
+                for (int i = start; i <= end; i++)
+                    map[currentroom.x, i] = 1;
+            }
+            if (Random.value > 0.95)
+                roomcenters.Add(currentroom); ;
+            //float xDist = currentroom.x > nearestroom.x ? currentroom.x - nearestroom.x : nearestroom.x - currentroom.x;
+            //float yDist = currentroom.y > nearestroom.y ? currentroom.y - nearestroom.y : nearestroom.y - currentroom.y;
+            //Debug.Log("X: " + xDist + ": " + currentroom.x + " -> " + nearestroom.x + "\nY: " + yDist + ": " + currentroom.y + " -> " + nearestroom.y);
+            
+            currentroom = nearestroom;
+        }
+    }
+
+    //---------------------------------------
+    //Get rooms
+
+    public List<BoundsInt> GetRooms()
+    {
+        return rooms;
+    }
+
+    public Vector2 GetMapSize()
+    {
+        return new Vector2(x, y);
+    }
+
+    //---------------------------------------
+    private void PlaceCharacters()
+    {
+        enemiesAI = new List<GameObject>();
+        int enemyCount = Random.Range(1, rooms.Count);
+        int offsetsize;
+
+        var playerroom = rooms[Random.Range(0, rooms.Count)];
+        offsetsize = playerroom.size.x / 2 + offset;
+        int i = Random.Range(playerroom.position.x + offsetsize, playerroom.size.x - offsetsize);
+        int j = Random.Range(playerroom.position.y + offsetsize, playerroom.size.y - offsetsize);
+        Instantiate(Player, new Vector3(i - x / 2 + 0.5f, j - y / 2 + 0.5f, 0f), Quaternion.identity);
+
+        foreach (var room in rooms)
+        {
+            offsetsize = room.size.x / 2 + offset;
+            i = Random.Range(room.position.x + offsetsize, room.size.x - offsetsize);
+            j = Random.Range(room.position.y + offsetsize, room.size.y - offsetsize);
+            if (enemyCount != 0)
+            {
+                GameObject enemy = Instantiate(enemyAI, new Vector3(i - x / 2 + 0.5f, j - y / 2 + 0.5f, 0f), Quaternion.identity);
+                enemiesAI.Add(enemy);
+                enemyCount--;
+            }
+            else
+                continue;
+        }
+    }
+
+    //
 }
