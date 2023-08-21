@@ -55,3 +55,11 @@
 *.meta linguist-generated
 *.prefab linguist-generated
 *.unity linguist-generated
+
+# Large binary files
+*.unity binary
+*.prefab binary
+*.fbx binary
+*.wav binary
+*.ogg binary
+*.mp4 binary
