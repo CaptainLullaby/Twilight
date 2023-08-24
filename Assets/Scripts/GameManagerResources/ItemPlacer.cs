@@ -10,7 +10,7 @@ public class ItemPlacer : MonoBehaviour
     [SerializeField] GameObject Itmes;
     [SerializeField] GameObject Enemies;
 
-
+    public bool GameReady = true;
     public bool placeObjects = false;
     public bool SpawnMore = false;
 
@@ -51,6 +51,8 @@ public class ItemPlacer : MonoBehaviour
         player.GetComponent<Health>().InitHealth(25);
         player.transform.SetParent(this.gameObject.transform);
         Rooms.Remove(Rooms[0]);
+        if (GameReady == false)
+            return;
         foreach (var room in Rooms)
         {
             if (Random.value > 0.85)
