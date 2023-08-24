@@ -7,9 +7,13 @@ TagManager:
   - AI
   - PlayerChar
   - Wall
-  - Detection_Cone
   - Ground
   - Map
+  - WeaponParent
+  - Baton
+  - Gun
+  - Shield
+  - GameManager
   layers:
   - Default
   - TransparentFX
@@ -18,11 +22,11 @@ TagManager:
   - Water
   - UI
   - Background
-  - Foreground
-  - 
-  - 
-  - 
-  - 
+  - Player
+  - AIs
+  - Ground
+  - Obstacle
+  - Minimap
   - 
   - 
   - 
